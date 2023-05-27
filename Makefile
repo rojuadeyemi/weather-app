@@ -10,7 +10,7 @@ venv: requirements.txt
 	touch venv
 
 deploy: venv
-	bin/run.sh
+	chmod +x bin/run.sh
 
 test: venv
 	source venv/bin/activate && \
