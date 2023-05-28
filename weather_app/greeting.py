@@ -50,7 +50,9 @@ def get_temperature(lat, lon, timezone):
     times = [entry['time'] for entry in data]
     temps = [entry['data']['instant']['details']['air_temperature']
              for entry in data]
-    temp_data = pd.Series(temps, index=times)
+    humid = [entry['data']['instant']['details']['relative_humidity']
+             for entry in data]
+    temp_data = pd.DataFrame({'temp':temps,'humid': humid}, index=times)
     temp_data.index = (pd.to_datetime(temp_data.index)
                          .tz_convert(timezone))
     return temp_data
@@ -62,8 +64,9 @@ def plot_forecast(data):
     """
     temp24H = data[1:25]
     temp24H_graph = StringIO()
-    fig = px.area(y=temp24H, x=temp24H.index.astype(str),
-                  title="24 Hour Forecast", width=1200, height=700,color='Temperature', pattern_shape_sequence=["."])
+    fig = px.area(y=data['temp'], x=data.index,
+                  title="24 Hour Forecast", width=1200, height=700,pattern_shape_sequence=["."])
+    fig = px.area(y=data['humid'], x=data.index,pattern_shape_sequence=["+"])
     fig.update_xaxes(title_text='Time')
     fig.update_yaxes(title_text='Air temperature in deg C')
 
