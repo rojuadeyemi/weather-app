@@ -14,7 +14,7 @@ def greet(ip_address):
     temp_data = get_temperature(location_data['lat'],
                                 location_data['lon'],
                                 location_data['timezone'])
-    temp_C = temp_data.iloc[0]
+    temp_C = temp_data[0]
     temp_F = convert_to_fahr(temp_C)
     wiki_query = wikipedia.search(f"""{location_data['city']},
                                   {location_data['country']}""")[0]
