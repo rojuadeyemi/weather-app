@@ -69,7 +69,6 @@ def plot_forecast(data):
     
     fig.update_xaxes(title_text='Humidity')
     fig.update_yaxes(title_text='Temperature (C)')
-    fig.update_zaxes(title_text='Time')
     fig.write_html(temp24H_graph, include_plotlyjs='cdn',
                    full_html=False)
 
