@@ -64,7 +64,7 @@ def plot_forecast(data):
     temp24H_graph = StringIO()
     fig = px.area(y=temp24H, x=temp24H.index.astype(str),
                   title="24 Hour Forecast", width=1200, height=700,color='Temperature',
-                  hover_data=['Time', 'Air temperature in deg C'],text_auto=True, pattern_shape_sequence=["."])
+                  hover_data=['Time', 'Air temperature in deg C'], pattern_shape_sequence=["."])
     fig.update_xaxes(title_text='Time')
     fig.update_yaxes(title_text='Air temperature in deg C')
 
