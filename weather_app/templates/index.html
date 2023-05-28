@@ -24,7 +24,7 @@
 <body>
     <div class="text-content">
         <h1>{{ weather_info.headline|safe }}</h1>
-        <p>(according to your IP address {{weather_info['ip_address']}})</p>
+        <p>According to your IP address {{weather_info['ip_address']}}</p>
     </div>
     <div class="graphs">
         {% for graph in weather_info['graphs'] %}
