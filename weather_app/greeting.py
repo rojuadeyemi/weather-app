@@ -89,7 +89,8 @@ def convert_to_fahr(temp_C):
 
 
 def get_local_IP_address():
-    return requests.get('https://api.ipify.org').text
+    return requests.get(
+        "https://ident.me/", headers={"User-Agent": "Aderoju"}).text
 
 
 if __name__ == '__main__':
