@@ -101,7 +101,7 @@ def plot_forecast(data):
         plot_bgcolor="#ffffcc",
         margin=dict(l=50, t=50, r=10, b=10),
     )
-fig2.update_traces(hovertemplate="<b>%{y}°C</b>")
+    fig2.update_traces(hovertemplate="<b>%{y}°C</b>")
     # Write graph to text buffer
     fig2.write_html(temp10D_graph, include_plotlyjs='cdn',
                     full_html=False)
