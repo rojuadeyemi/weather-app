@@ -64,7 +64,7 @@ def plot_forecast(data):
     """
     
     temp24H_graph = StringIO()
-    fig = px.line_3d(data.iloc[1:25],y='temp', x='humid',z=data.index
+    fig = px.line_3d(data.iloc[1:25],y='temp', x='humid',z=data.index,
                   title="24 Hour Forecast", width=1400, height=900)
     
     fig.update_xaxes(title_text='Humidity')
