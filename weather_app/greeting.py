@@ -67,7 +67,7 @@ def plot_forecast(data):
     fig = px.line_3d(data.iloc[1:25],y='temp', x=data.iloc[1:25].index,z='humid',
                   title="24 Hour Forecast", width=1200, height=900)
     
-    fig.update_xaxes(title_text='Humidity')
+    fig.update_xaxes(title_text='Time')
     fig.update_yaxes(title_text='Temperature (C)')
     fig.write_html(temp24H_graph, include_plotlyjs='cdn',
                    full_html=False)
