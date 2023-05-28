@@ -64,8 +64,8 @@ def plot_forecast(data):
     """
     
     temp24H_graph = StringIO()
-    fig = px.line_3d(data.iloc[1:25],y='temp', x='humid',z=data.iloc[1:25].index,
-                  title="24 Hour Forecast", width=1400, height=900)
+    fig = px.line_3d(data.iloc[1:25],y='temp', x=data.iloc[1:25].index,z='humid',
+                  title="24 Hour Forecast", width=1200, height=900)
     
     fig.update_xaxes(title_text='Humidity')
     fig.update_yaxes(title_text='Temperature (C)')
@@ -75,7 +75,7 @@ def plot_forecast(data):
     temp10D = data['temp'].resample('1D').agg(['max', 'min'])
     temp10D_graph = StringIO()
     fig2 = px.bar(temp10D,
-                  barmode='group', title="10 Day Forecast", width=1400,
+                  barmode='group', title="10 Day Forecast", width=1200,
                   height=900,
                   text_auto=True)
     fig2.update_xaxes(title_text='Date')
