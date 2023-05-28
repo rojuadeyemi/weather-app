@@ -60,7 +60,7 @@ def plot_forecast(data):
     """
     Plot line graph of 24hr forecast, and bar graph of 10-day max & min.
     """
-    temp24 = data
+    temp24 = data[:24]
     temp24H_graph = StringIO()
     fig = px.line(y=temp24, x=temp24.index,
                   title="24 Hour Forecast", width=1200, height=900)
@@ -89,8 +89,7 @@ def convert_to_fahr(temp_C):
 
 
 def get_local_IP_address():
-    return requests.get(
-        "https://ident.me/", headers={"User-Agent": "Aderoju"}).text
+    return requests.get("https://ident.me/", headers={"User-Agent": "Aderoju"}).text
 
 
 if __name__ == '__main__':
