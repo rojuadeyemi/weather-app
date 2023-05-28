@@ -63,7 +63,7 @@ def plot_forecast(data):
     temp24 = data[:24]
     temp24H_graph = StringIO()
     fig = px.line(y=temp24, x=temp24.index,
-                  title="24 Hour Forecast", width=1200, height=900)
+                  title="24 Hour Forecast", width=700, height=500)
     
     fig.update_xaxes(title_text='Date',fixedrange=True, gridcolor="#ccc")
     fig.update_yaxes(title_text="Air temperature in °C",
@@ -86,8 +86,8 @@ def plot_forecast(data):
     temp10D = data.resample('1D').agg(['max', 'min'])
     temp10D_graph = StringIO()
     fig2 = px.bar(temp10D,
-                  barmode='group', title="10 Day Forecast", width=1200,
-                  height=900,
+                  barmode='group', title="10 Day Forecast", width=700,
+                  height=500,
                   text_auto=True)
     fig2.update_xaxes(title_text='Date')
     fig2.update_yaxes(fixedrange=True,
