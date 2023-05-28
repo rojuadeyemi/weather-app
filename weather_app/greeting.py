@@ -75,7 +75,7 @@ def plot_forecast(data):
     temp10D_graph = StringIO()
     fig2 = px.bar(temp10D,
                   barmode='group', title="10 Day Forecast", width=1200,
-                  height=700,color='Temperature,hover_data=['Date', 'Air temperature in deg C'],
+                  height=700,color='Temperature',hover_data=['Date', 'Air temperature in deg C'],
                   text_auto=True,pattern_shape_sequence=[".", "+"])
     fig2.update_xaxes(title_text='Date')
     fig2.update_yaxes(title_text='Air temperature in deg C')
