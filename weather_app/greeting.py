@@ -62,23 +62,23 @@ def plot_forecast(data):
     """
     Plot line graph of 24hr forecast, and bar graph of 10-day max & min.
     """
-    temp24H = data[1:25]
+    
     temp24H_graph = StringIO()
-    fig = px.area(data,y='temp', x=data.index,
-                  title="24 Hour Forecast", width=1200, height=700,pattern_shape_sequence=["."])
-    fig = px.area(data, y='humid', x=data.index,pattern_shape_sequence=["+"])
-    fig.update_xaxes(title_text='Time')
-    fig.update_yaxes(title_text='Air temperature (C) and Humidity')
-
+    fig = px.line_3d(data.iloc[1:25],y='temp', x='humid',z=data.index
+                  title="24 Hour Forecast", width=1400, height=900)
+    
+    fig.update_xaxes(title_text='Humidity')
+    fig.update_yaxes(title_text='Temperature (C)')
+    fig.update_zaxes(title_text='Time')
     fig.write_html(temp24H_graph, include_plotlyjs='cdn',
                    full_html=False)
 
     temp10D = data['temp'].resample('1D').agg(['max', 'min'])
     temp10D_graph = StringIO()
     fig2 = px.bar(temp10D,
-                  barmode='group', title="10 Day Forecast", width=1200,
-                  height=700,
-                  text_auto=True,pattern_shape_sequence=[".", "+"])
+                  barmode='group', title="10 Day Forecast", width=1400,
+                  height=900,
+                  text_auto=True)
     fig2.update_xaxes(title_text='Date')
     fig2.update_yaxes(title_text='Air temperature in deg C')
     fig2.write_html(temp10D_graph, include_plotlyjs='cdn',
