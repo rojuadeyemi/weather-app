@@ -65,8 +65,21 @@ def plot_forecast(data):
     fig = px.line(y=temp24, x=temp24.index,
                   title="24 Hour Forecast", width=1200, height=900)
     
-    fig.update_xaxes(title_text='Date')
-    fig.update_yaxes(title_text='Air temperature in deg C')
+    fig.update_xaxes(title_text='Date',fixedrange=True, gridcolor="#ccc")
+    fig.update_yaxes(title_text="Air temperature in °C",
+        fixedrange=True,
+        gridcolor="#ccc",
+    )
+    fig.update_layout(
+        font_family="serif",
+        paper_bgcolor="#ffffcc",
+        plot_bgcolor="#ffffcc",
+        margin=dict(l=50, t=50, r=10, b=10),
+    )
+    fig.update_traces(
+        hovertemplate="<b>Time</b>: %{x}<br><b>Temp</b>: %{y}°C<br>",
+        marker_size=4,
+    )
     fig.write_html(temp24H_graph, include_plotlyjs='cdn',
                    full_html=False)
 
@@ -77,7 +90,19 @@ def plot_forecast(data):
                   height=900,
                   text_auto=True)
     fig2.update_xaxes(title_text='Date')
-    fig2.update_yaxes(title_text='Air temperature in deg C')
+    fig2.update_yaxes(fixedrange=True,
+        showgrid=True,
+        gridcolor="#ccc",
+        title="Air temperature in °C")
+    fig2.update_layout(
+        font_family="serif",
+        hovermode="x unified",
+        paper_bgcolor="#ffffcc",
+        plot_bgcolor="#ffffcc",
+        margin=dict(l=50, t=50, r=10, b=10),
+    )
+fig2.update_traces(hovertemplate="<b>%{y}°C</b>")
+    # Write graph to text buffer
     fig2.write_html(temp10D_graph, include_plotlyjs='cdn',
                     full_html=False)
     return temp24H_graph, temp10D_graph
