@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Weather App</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+
+<body>
+    
+    <div class="weather-info">
+
+        <div class="intro">
+            <h4 id="header" ></h4>
+            <h4 id="climatic" ></h4>
+        </div>
+
+        <div class="icons" id="icons"></div>
+    
+    </div>
+    
+    <div class="weather-graphs">
+        <div id="graph-container-1"></div>
+        <div id="graph-container-2"></div>
+    </div>
+</body>
+
+</html>
