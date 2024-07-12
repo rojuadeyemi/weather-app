@@ -1,0 +1,39 @@
+ 2024-07-12 08:00:43,543 - INFO- Client disconnected
+ 2024-07-12 08:00:43,545 - INFO- 127.0.0.1 - - [12/Jul/2024 08:00:43] "GET /socket.io/?EIO=4&transport=websocket&sid=aj9LHth55QJ7EjJ0AAAA HTTP/1.1" 200 -
+ 2024-07-12 08:00:44,141 - INFO- 127.0.0.1 - - [12/Jul/2024 08:00:44] "GET / HTTP/1.1" 200 -
+ 2024-07-12 08:00:50,825 - INFO- 127.0.0.1 - - [12/Jul/2024 08:00:50] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+ 2024-07-12 08:00:51,009 - INFO- 127.0.0.1 - - [12/Jul/2024 08:00:51] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+ 2024-07-12 08:00:52,409 - INFO- 127.0.0.1 - - [12/Jul/2024 08:00:52] "GET /socket.io/?EIO=4&transport=polling&t=P2blg8U HTTP/1.1" 200 -
+ 2024-07-12 08:00:52,550 - INFO- Client connected
+ 2024-07-12 08:00:52,551 - INFO- 127.0.0.1 - - [12/Jul/2024 08:00:52] "POST /socket.io/?EIO=4&transport=polling&t=P2blgAs&sid=VBUQZuTk2yNoaM0TAAAC HTTP/1.1" 200 -
+ 2024-07-12 08:00:52,904 - INFO- 127.0.0.1 - - [12/Jul/2024 08:00:52] "GET /socket.io/?EIO=4&transport=polling&t=P2blgDX&sid=VBUQZuTk2yNoaM0TAAAC HTTP/1.1" 200 -
+ 2024-07-12 08:00:52,911 - INFO- 127.0.0.1 - - [12/Jul/2024 08:00:52] "[36mGET /static/favicon.ico HTTP/1.1[0m" 304 -
+ 2024-07-12 08:01:41,924 - INFO-  * Detected change in 'C:\\Users\\Aderoju\\Desktop\\Python Project\\wqu-weather-app-main\\weather_app\\weather_info.py', reloading
+ 2024-07-12 08:01:42,505 - INFO-  * Restarting with stat
+ 2024-07-12 08:01:55,083 - INFO- 127.0.0.1 - - [12/Jul/2024 08:01:55] "GET /socket.io/?EIO=4&transport=polling&t=P2blskQ HTTP/1.1" 200 -
+ 2024-07-12 08:01:55,113 - INFO- Client connected
+ 2024-07-12 08:01:55,114 - INFO- 127.0.0.1 - - [12/Jul/2024 08:01:55] "POST /socket.io/?EIO=4&transport=polling&t=P2blvSL&sid=8SboLBJEnGWmuFlsAAAA HTTP/1.1" 200 -
+ 2024-07-12 08:01:55,185 - INFO- 127.0.0.1 - - [12/Jul/2024 08:01:55] "GET /socket.io/?EIO=4&transport=polling&t=P2blvTa&sid=8SboLBJEnGWmuFlsAAAA HTTP/1.1" 200 -
+ 2024-07-12 08:01:55,469 - INFO- 127.0.0.1 - - [12/Jul/2024 08:01:55] "GET /socket.io/?EIO=4&transport=polling&t=P2blvU8&sid=8SboLBJEnGWmuFlsAAAA HTTP/1.1" 200 -
+ 2024-07-12 08:02:03,194 - INFO- Client disconnected
+ 2024-07-12 08:02:03,220 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:03] "GET /socket.io/?EIO=4&transport=websocket&sid=8SboLBJEnGWmuFlsAAAA HTTP/1.1" 200 -
+ 2024-07-12 08:02:03,357 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:03] "GET / HTTP/1.1" 200 -
+ 2024-07-12 08:02:10,469 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:10] "[36mGET /static/script.js HTTP/1.1[0m" 304 -
+ 2024-07-12 08:02:10,552 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:10] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+ 2024-07-12 08:02:16,232 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:16] "[36mGET /static/favicon.ico HTTP/1.1[0m" 304 -
+ 2024-07-12 08:02:16,233 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:16] "GET /socket.io/?EIO=4&transport=polling&t=P2bl-RB HTTP/1.1" 200 -
+ 2024-07-12 08:02:16,350 - INFO- Client connected
+ 2024-07-12 08:02:16,352 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:16] "POST /socket.io/?EIO=4&transport=polling&t=P2bl-eE&sid=z5lcJEbbjfCOXchSAAAC HTTP/1.1" 200 -
+ 2024-07-12 08:02:16,740 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:16] "GET /socket.io/?EIO=4&transport=polling&t=P2bl-en&sid=z5lcJEbbjfCOXchSAAAC HTTP/1.1" 200 -
+ 2024-07-12 08:02:21,737 - INFO- Client received data
+ 2024-07-12 08:02:23,746 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:23] "[36mGET /static/weather-icons/cloudy.svg HTTP/1.1[0m" 304 -
+ 2024-07-12 08:02:24,842 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:24] "GET /static/weather-icons/lightrain.svg HTTP/1.1" 200 -
+ 2024-07-12 08:02:25,002 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:25] "[36mGET /static/weather-icons/lightrainshowers_day.svg HTTP/1.1[0m" 304 -
+ 2024-07-12 08:02:35,466 - INFO-  * Detected change in 'C:\\Users\\Aderoju\\Desktop\\Python Project\\wqu-weather-app-main\\weather_app\\__init__.py', reloading
+ 2024-07-12 08:02:36,397 - INFO-  * Restarting with stat
+ 2024-07-12 08:02:52,046 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:52] "GET /socket.io/?EIO=4&transport=polling&t=P2bm59B HTTP/1.1" 200 -
+ 2024-07-12 08:02:52,350 - INFO- Client connected
+ 2024-07-12 08:02:52,352 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:52] "POST /socket.io/?EIO=4&transport=polling&t=P2bm7NA&sid=AKbd4GtxlhXXwJRvAAAA HTTP/1.1" 200 -
+ 2024-07-12 08:02:52,713 - INFO- 127.0.0.1 - - [12/Jul/2024 08:02:52] "GET /socket.io/?EIO=4&transport=polling&t=P2bm7NE&sid=AKbd4GtxlhXXwJRvAAAA HTTP/1.1" 200 -
+ 2024-07-12 08:06:12,236 - INFO- Client disconnected
+ 2024-07-12 08:06:12,240 - INFO- 127.0.0.1 - - [12/Jul/2024 08:06:12] "GET /socket.io/?EIO=4&transport=websocket&sid=AKbd4GtxlhXXwJRvAAAA HTTP/1.1" 200 -

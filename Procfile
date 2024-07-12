@@ -1,0 +1,1 @@
+web: gunicorn -w 5 -k eventlet weather_app:app
