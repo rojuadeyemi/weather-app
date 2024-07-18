@@ -97,6 +97,7 @@ Then open your web browser and navigate to `<http://127.0.0.1:5000/>` to access 
 
 ![screenshot of app](Capture.PNG)
 
+This is currently rendered on [Render](render.com) at [MyLocation-app](https://mylocation-app.onrender.com/)
 ## Acknowledgements
 - [ip-api](http://ip-api.com)  for providing geolocation API
 - [Met Weather](https://api.met.no/) for providing the weather data API
