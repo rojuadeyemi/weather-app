@@ -59,4 +59,4 @@ def handle_request_data():
         logging.error(f"Error in handle_request_data: {e}")
 
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app,host="0.0.0.0", port=10000)
