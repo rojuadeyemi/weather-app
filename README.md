@@ -81,13 +81,13 @@ To run the *Flask development server*, you can use the command `make develop`. Y
 
 For *Linux/Mac*:
 ```sh
-export FLASK_APP=weather_app
+export FLASK_APP=app
 export FLASK_ENV=development
 flask run  
 ```
 For *Windows*:
 ```sh
-set FLASK_APP=weather_app
+set FLASK_APP=app
 set FLASK_ENV=development
 flask run
 ```
