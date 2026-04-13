@@ -6,7 +6,7 @@ import logging
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Therebelxy'
 
-socketio = SocketIO(app, async_mode='gevent',cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Initialize logging
 logging.basicConfig(filename='Log.txt',level=logging.INFO,
