@@ -1,3 +1,6 @@
+from gevent import monkey
+monkey.patch_all()
+
 from flask import Flask, render_template
 from weather_app.weather_info import get_external_IP_address, process_weather_forecast
 from flask_socketio import SocketIO
@@ -6,7 +9,7 @@ import logging
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Therebelxy'
 
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins="*")
 
 # Initialize logging
 logging.basicConfig(filename='Log.txt',level=logging.INFO,
