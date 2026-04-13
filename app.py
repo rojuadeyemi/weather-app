@@ -28,15 +28,15 @@ def handle_disconnect():
 def handle_fetch_data():
     try:
         ip_address = get_external_IP_address()
-        
         weather_data = process_weather_forecast(ip_address)
-        
+
         data = {
             "climatic": weather_data['climatic'],
             "header": weather_data['headline']
         }
-        
-        socketio.emit("header_data", data)
+
+        socketio.emit("header_data", data, to=request.sid)
+
     except Exception as e:
         logging.error(f"Error in handle_fetch_data: {e}")
 
@@ -45,7 +45,7 @@ def handle_request_data():
     try:
         ip_address = get_external_IP_address()
         weather_data = process_weather_forecast(ip_address)
-        
+
         data = {
             "graph1": weather_data['graphs']["24h"],
             "graph2": weather_data['graphs']["10d"],
@@ -53,10 +53,13 @@ def handle_request_data():
             "forecast": weather_data['forecast']
         }
 
-        socketio.emit('update_data', data)
+        socketio.emit('update_data', data, to=request.sid)
+
         logging.info('Client received data')
+
     except Exception as e:
         logging.error(f"Error in handle_request_data: {e}")
-
+      
 if __name__ == '__main__':
-    socketio.run(app,host="0.0.0.0", port=10000)
+  import os
+  socketio.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
