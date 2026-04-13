@@ -34,7 +34,7 @@ The application:
 
 ### Prerequisites
 
-- Python 3.8-3.10
+- Python 3.11.9
 - Pip (Python package installer)
 
 ### Setup
@@ -83,7 +83,7 @@ For *Linux/Mac*:
 ```sh
 export FLASK_APP=weather_app
 export FLASK_ENV=development
-flask run   
+flask run  
 ```
 For *Windows*:
 ```sh
@@ -103,12 +103,3 @@ This is currently rendered at [MyLocation-app](https://mylocation-app.onrender.c
 - [Met Weather](https://api.met.no/) for providing the weather data API
 - [Waitress](https://docs.pylonsproject.org/projects/waitress/en/stable/runner.html) for the WSGI server
 - [Render](render.com) for provision of free tier deployment of the app.
-
-## Contributors
-
-Thanks to the following people who have contributed to this project:
-
-* [Aderoju](https://github.com/rojuadeyemi)
-
-## Contact
-For any inquiries or support, please contact rojuadeyemi@yahoo.com.
