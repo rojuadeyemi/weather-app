@@ -1,102 +1,91 @@
-document.addEventListener("DOMContentLoaded", function () {
+var socket = io({
+    transports: ['websocket', 'polling']
+});
 
-    var socket = io("https://mylocation-app.onrender.com", {
-        transports: ['websocket', 'polling'],
-        reconnection: true
-    });
+// Function to request data from the server
+function fetchData() {
+    socket.emit('fetch_data');
+}
 
-    // Function to request data from the server
-    function fetchData() {
-        socket.emit('fetch_data');
-    }
+function requestUpdateData() {
+    socket.emit('request_data');
+}
 
-    function requestUpdateData() {
-        socket.emit('request_data');
-    }
+// Function to update header information
+function updateHeaderData(data) {
+    document.getElementById('climatic').innerText = data.climatic;
+    document.getElementById('header').innerText = data.header;
+}
 
-    // Function to update header information
-    function updateHeaderData(data) {
-        const climaticEl = document.getElementById('climatic');
-        const headerEl = document.getElementById('header');
+// Function to update graphs
+function updateGraphs(graph1, graph2) {
+    Plotly.react('graph-container-1', graph1.data, graph1.layout);
+    Plotly.react('graph-container-2', graph2.data, graph2.layout);
+}
 
-        if (climaticEl) climaticEl.innerText = data.climatic;
-        if (headerEl) headerEl.innerText = data.header;
-    }
+// Function to update weather icons and details
+function updateWeatherIcons(data) {
+    var iconsContainer = document.getElementById('icons');
+    iconsContainer.innerHTML = '';  // Clear any existing content
 
-    // Function to update graphs
-    function updateGraphs(graph1, graph2) {
-        if (graph1 && graph2) {
-            Plotly.react('graph-container-1', graph1.data, graph1.layout);
-            Plotly.react('graph-container-2', graph2.data, graph2.layout);
-        }
-    }
+    Object.keys(data.icons).forEach(period => {
+        var icon = data.icons[period];
+        var periodDiv = document.createElement('div');
 
-    // Function to update weather icons and details
-    function updateWeatherIcons(data) {
-        var iconsContainer = document.getElementById('icons');
-        if (!iconsContainer) return;
+        var periodName = document.createElement('h3');
+        periodName.innerText = `Next ${period}`;
+        periodDiv.appendChild(periodName);
 
-        iconsContainer.innerHTML = '';
+        var iconImg = document.createElement('img');
+        iconImg.src = `/static/weather-icons/${icon}.svg`;
+        iconImg.className = 'weather-icon';
+        iconImg.alt = 'No image';
+        periodDiv.appendChild(iconImg);
 
-        Object.keys(data.icons || {}).forEach(period => {
-            var icon = data.icons[period];
-            var periodDiv = document.createElement('div');
+        var forecastDetails = data.forecast[period];
 
-            var periodName = document.createElement('h3');
-            periodName.innerText = `Next ${period}`;
-            periodDiv.appendChild(periodName);
+        Object.keys(forecastDetails).forEach(metric => {
+            var value = forecastDetails[metric];
+            var metricDiv = document.createElement('div');
+            metricDiv.className = 'weather-metrics';
 
-            var iconImg = document.createElement('img');
-            iconImg.src = `/static/weather-icons/${icon}.svg`;
-            iconImg.className = 'weather-icon';
-            iconImg.alt = 'No image';
-            periodDiv.appendChild(iconImg);
+            var metricName = document.createElement('h4');
+            metricName.className = 'metric';
+            metricName.innerText = metric;
+            metricDiv.appendChild(metricName);
 
-            var forecastDetails = data.forecast?.[period] || {};
+            var metricValue = document.createElement('p');
+            metricValue.className = 'metric-value';
+            metricValue.innerText = value;
+            metricDiv.appendChild(metricValue);
 
-            Object.keys(forecastDetails).forEach(metric => {
-                var value = forecastDetails[metric];
-
-                var metricDiv = document.createElement('div');
-                metricDiv.className = 'weather-metrics';
-
-                var metricName = document.createElement('h4');
-                metricName.className = 'metric';
-                metricName.innerText = metric;
-
-                var metricValue = document.createElement('p');
-                metricValue.className = 'metric-value';
-                metricValue.innerText = value;
-
-                metricDiv.appendChild(metricName);
-                metricDiv.appendChild(metricValue);
-                periodDiv.appendChild(metricDiv);
-            });
-
-            iconsContainer.appendChild(periodDiv);
+            periodDiv.appendChild(metricDiv);
         });
-    }
 
-    // Socket events
-    socket.on('connect', function () {
-        console.log('Connected to server');
+        iconsContainer.appendChild(periodDiv);
     });
+}
 
-    socket.on('header_data', function (data) {
-        updateHeaderData(data);
-    });
+// Set up event listeners for socket events
+socket.on('connect', function () {
+    console.log('Connected to server');
+});
 
-    socket.on('update_data', function (data) {
-        updateGraphs(data.graph1, data.graph2);
-        updateWeatherIcons(data);
-    });
+socket.on('header_data', function (data) {
+    updateHeaderData(data);
+});
 
-    // Intervals
-    setInterval(fetchData, 50000);
-    setInterval(requestUpdateData, 600000);
+socket.on('update_data', function (data) {
+    updateGraphs(data.graph1, data.graph2);
+    updateWeatherIcons(data);
+});
 
-    // Initial load
+// Fetch data every 1 minute and 10 minutes
+setInterval(fetchData, 50000);
+setInterval(requestUpdateData, 600000);
+
+// Fetch data immediately when the page loads
+(function initialize() {
     fetchData();
     requestUpdateData();
-
-});
+})();
