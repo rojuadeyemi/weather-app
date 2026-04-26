@@ -203,67 +203,56 @@ def get_forecast_detail(weather_data: list, timezone: str) -> dict:
     } for time in [1, 6, 12]
     }
 
-def climatic_condition(temperature:float,humidity:float, 
-                       cloud_fraction:float,wind_speed:float) ->str:
-    
-    """Get climatic condition as a string.
-
-    Args:
-        temperature (float): Location temperature value.
-        humidity (float): Location humidity value.
-        cloud_fraction (float): Location cloud area fraction value.
-        wind_speed (float): Location wind speed value.
-
-    Returns:
-        str: climatic condition of the input values.
+def climatic_condition(
+    temperature: float,
+    humidity: float,
+    cloud_fraction: float,
+    wind_speed: float
+) -> str:
+    """
+    Determine climatic condition based on weather parameters.
     """
 
-    if temperature < 25:
-        if humidity > 80:
-            if cloud_fraction > 75 and wind_speed >8:
-                return "Heavy Rainfall"
-            if 50 <= cloud_fraction <= 75 and wind_speed < 5:
-                return "Light Rain"
-            if cloud_fraction < 50 and wind_speed < 5:
-                return "Cloudy"
-        if humidity > 80 and wind_speed < 8:
-            return "Light Rain"
-        return "Cloudy"
-    if temperature < 27:
-        if humidity > 80 and wind_speed < 8:
-            return "Light Rain"
-        if 60 <= humidity <= 80 and cloud_fraction > 75 and 5 <= wind_speed <= 10:
-            return "Rainy"
-        if 60 <= humidity <= 80 and 50 <= cloud_fraction <= 75 and 5 <= wind_speed <= 10:
-            return "Light Rain"
-        if 60 <= humidity <= 80 and cloud_fraction < 50 and 5 <= wind_speed <= 10:
-            return "Cloudy"
-        
-    if 25 <= temperature <= 30:
-        if 40 <= humidity <= 60:
-            if cloud_fraction > 75 and 10 <= wind_speed <= 20:
-                return "Overcast"
-            if cloud_fraction <= 75 and 10 <= wind_speed <= 20:
-                return "Partly Cloudy"
-            if cloud_fraction < 50 and 10 <= wind_speed <= 20:
-                return "Clear Sky"
-        if humidity < 40 and cloud_fraction == 0 and wind_speed > 20:
-            return "Very Dry"
-        if humidity > 80 and wind_speed < 8:
-            return "Mostly Cloudy"
-        if humidity < 80 and wind_speed < 8:
-            return "Partly Sunny"
-    if temperature > 30:
-        if humidity < 40:
-            if cloud_fraction > 75 and wind_speed > 20:
-                return "Hot and Humid"
-            if 50 <= cloud_fraction <= 75 and wind_speed > 20:
-                return "Hot"
-            if cloud_fraction < 50 and wind_speed > 20:
-                return "Very Hot"
-    if cloud_fraction > 75 and wind_speed > 20:
+    # --- Extreme / dominant conditions first ---
+    if wind_speed > 30 and cloud_fraction > 70:
         return "Stormy"
+
     if wind_speed > 30 and temperature > 30:
         return "Intense Sun"
 
-    return "Unknown"
+    # --- Rain conditions ---
+    if humidity > 80:
+        if cloud_fraction > 75:
+            if wind_speed > 8:
+                return "Heavy Rainfall"
+            return "Rainy"
+        if cloud_fraction >= 50:
+            return "Light Rain"
+
+    # --- Cloud coverage ---
+    if cloud_fraction > 75:
+        return "Overcast"
+    if 50 <= cloud_fraction <= 75:
+        return "Cloudy"
+    if 20 <= cloud_fraction < 50:
+        return "Partly Cloudy"
+
+    # --- Dry / clear conditions ---
+    if humidity < 40:
+        if temperature > 30:
+            return "Very Hot"
+        if cloud_fraction < 20:
+            return "Clear Sky"
+        return "Dry"
+
+    # --- Temperature-based refinement ---
+    if temperature < 25:
+        return "Cool"
+    if 25 <= temperature <= 30:
+        return "Warm"
+    if temperature > 30:
+        if humidity > 60:
+            return "Hot and Humid"
+        return "Hot"
+
+    return "Moderate"
