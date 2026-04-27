@@ -1,63 +1,95 @@
-import pandas as pd
 import requests
-import datetime as dt
 import requests_cache
-
 from weather_app.plotting import get_graphs
+from datetime import  timedelta
+requests_cache.install_cache(expire_after=600)
+import pandas as pd
 
-# requests_cache configuration
-FLUSH_PERIOD = 10 * 60  # 10 minutes in seconds
-requests_cache.install_cache(expire_after=FLUSH_PERIOD)
+WEATHER_URL = "https://api.met.no/weatherapi/locationforecast/2.0/complete"
 
-def process_weather_forecast(ip_address: str) -> dict:
-    """Gather weather and location-related information.
 
-    Args:
-        ip_address (str): An IPv4/IPv6 address, or a domain name.
-
-    Returns:
-        dict: Weather and location info.
+def process_weather_forecast(ip_address=None, lat=None, lon=None):
     """
-    
-    # get location information such as latitude, longitude and timezone
-    location = get_location(ip_address)
+    Lightweight weather processor (frontend handles time).
+    """
 
-    # Using latitude, longitude and timezone, obtain the time-series data for the weather (a list of dictionaries)
-    weather_info = get_weather_info(location["lat"], location["lon"], location["timezone"])
-    
-    # Using latitude, longitude and timezone, obtain the time-series data for only temperature (Pandas Series)
-    temperature_ts = get_temperature_time_series(weather_info, timezone=location["timezone"])
+    location = (
+        get_location_by_coords(lat, lon)
+        if lat is not None and lon is not None
+        else get_location(ip_address or get_external_IP_address())
+    )
 
-    # Obtain the next 1hr, 6hr and 12hr of the weather data 
-    forecast=get_forecast_detail(weather_info,location["timezone"])
+    weather_data = get_weather_info(location["lat"], location["lon"])
 
-    # Obtain the current hour temperature value and convert to Farrheit
-    temp_C = weather_info[0]["data"]["instant"]["details"]['air_temperature']
-    temp_F = convert_to_fahr(temp_C)
+    current = weather_data.iloc[1]
+    symbol = current["symbol"] or "clearsky_day"
+    temp_c = current["temperature"]
+    temp_F = convert_to_fahr(temp_c)
+    forecast, icons = build_forecast(weather_data)
 
-    # Obtain the current hour Humidity
-    humidity = weather_info[0]["data"]["instant"]["details"]['relative_humidity']
-    
-    # Obtain the current hour Cloud fraction
-    cloud_fraction = weather_info[0]["data"]["instant"]["details"]['cloud_area_fraction']
+    return {
+        "graphs": get_graphs(weather_data),
+        "headline": f"{temp_c:.0f}°C ({temp_F :.0f}°F) in {location['city']}, {location['country']}",
+        "climatic": map_weather_condition(symbol),
+        "symbol": symbol,
+        "forecast": forecast,
+        "weather_icons": icons,
+    }
 
-    # Obtain the current hour Cloud fraction
-    wind_speed = weather_info[0]["data"]["instant"]["details"]['wind_speed']
+def map_weather_condition(symbol_code: str) -> str:
+    """Convert API weather symbol code into human-readable condition."""
 
-    climatic_cond = climatic_condition(temp_C,humidity,cloud_fraction,wind_speed)
-    
-    return dict(
-        graphs=get_graphs(temperature_ts),
-        headline=(
-            f"It's {temp_C :.0f}°C ({temp_F :.0f}°F) in {location['city']},"
-            f" {location['country']} right now."
-        ),
-        climatic = climatic_cond+' • '+dt.datetime.now().strftime("%a %d, %I:%M %p"),
-        forecast=forecast,
-        ip_address=ip_address,
-        weather_icons=get_weather_icons(weather_info[1]),
-        )
+    mapping = {
+        # Clear / fair
+        "clearsky_day": "Clear Sky",
+        "clearsky_night": "Clear Night",
+        "fair_day": "Fair",
+        "fair_night": "Fair",
 
+        # Cloudy
+        "partlycloudy_day": "Partly Cloudy",
+        "partlycloudy_night": "Partly Cloudy",
+        "cloudy": "Cloudy",
+
+        # Rain
+        "lightrain": "Light Rain",
+        "lightrainshowers_day": "Light Rain Showers",
+        "rain": "Rainy",
+        "rainshowers_day": "Rain Showers",
+        "heavyrain": "Heavy Rainfall",
+        "heavyrainshowers_day": "Heavy Rain Showers",
+
+        # Thunder
+        "lightrainshowersandthunder_day": "Light Rain & Thunder",
+        "rainandthunder": "Rain & Thunder",
+        "heavyrainandthunder": "Heavy Rain & Thunder",
+
+        # Snow
+        "snow": "Snow",
+        "heavysnow": "Heavy Snow",
+
+        # Fog
+        "fog": "Foggy",
+    }
+
+    # Remove suffix like "_day" / "_night" / "_polartwilight"
+    base_code = symbol_code.replace("_polartwilight", "")
+
+    return mapping.get(base_code, base_code.replace("_", " ").title())
+
+def get_location_by_coords(lat, lon):
+    response = requests.get(
+        "http://ip-api.com/json/",
+        params={"query": f"{lat},{lon}"}
+    ).json()
+
+    return {
+        "city": response.get("city", "Unknown"),
+        "country": response.get("country", "Unknown"),
+        "lat": lat,
+        "lon": lon,
+        "timezone": response.get("timezone", "UTC"),
+    }
 
 def get_location(ip_address: str) -> dict:
     """Get city, country, latitude, longitude and timezone information for a
@@ -80,179 +112,82 @@ def get_location(ip_address: str) -> dict:
     }
 
 
-def get_weather_info(lat: float, lon: float, timezone: str) -> list:
-    """Get weather forecast data for a given location.
-
-    Args:
-        lat (float): Latitude.
-        lon (float): Longitude.
-        timezone (str): Time zone information e.g. 'GMT'.
-
-    Returns:
-        dict: Weather forecast data in JSON.
-    """
-    return requests.get(
-        "https://api.met.no/weatherapi/locationforecast/2.0/complete",
+def get_weather_info(lat: float, lon: float):
+    response = requests.get(
+        WEATHER_URL,
         params={"lat": lat, "lon": lon},
         headers={"User-Agent": "Aderoju"},
     ).json()["properties"]["timeseries"]
 
-def get_weather_icons(current_weather: dict) -> dict:
-    """Fetch the appropriate icons to illustrate the weather for the next
-    few hours.
+    records = []
 
-    Args:
-        current_weather (dict): Weather forecast for the current hour.
+    for entry in response:
+        details = entry["data"]["instant"]["details"]
 
-    Returns:
-        dict: Weather forecast icons for the next 1, 6 and 12 hours.
-    """
-    return {
-        f"{time}h": current_weather["data"][f"next_{time}_hours"]["summary"][
-            "symbol_code"
-        ]
-        for time in [1, 6, 12]
-    }
+        # safely get symbol_code
+        symbol = (
+            entry.get("data", {})
+            .get("next_1_hours", {})
+            .get("summary", {})
+            .get("symbol_code")
+        )
 
+        records.append({
+            "time": entry["time"],
+            "temperature": details.get("air_temperature"),
+            "humidity": details.get("relative_humidity"),
+            "wind_speed": details.get("wind_speed"),
+            "cloud": details.get("cloud_area_fraction"),
+            "symbol": symbol
+        })
 
-def get_temperature_time_series(
-    weather_data: list, timezone: str
-) -> pd.Series:
-    """Get air temperature forecasts as a time-zone-aware pandas Series.
+    df = pd.DataFrame(records)
 
-    Args:
-        weather_data (list): Time series data with hourly weather forecasts.
-        timezone (str): Time zone information e.g. 'GMT'.
+    # convert time
+    df["time"] = pd.to_datetime(df["time"])
+    df = df.set_index("time")
 
-    Returns:
-        pandas.Series: Air temperature forecast time series data.
-    """
-    time_info = [entry["time"] for entry in weather_data]
-
-    temp_info = [
-        entry["data"]["instant"]["details"]["air_temperature"]
-        for entry in weather_data
-    ]
-
-    temp_data = pd.Series(temp_info, index=time_info)
-
-    # Make the index time-zone aware
-    temp_data.index = pd.to_datetime(temp_data.index).tz_convert(timezone)
-
-    return temp_data
-
+    return df
 
 def convert_to_fahr(temp_C: float) -> float:
-    """Convert temperature from degrees Celcius/centigrade to Fahrenheit.
 
-    Args:
-        temp_C (float): Temperature in degrees Celcius/centigrade.
-
-    Returns:
-        float: Temperature in degrees Fahrenheit.
-    """
     return 9 / 5 * temp_C + 32
 
 
 def get_external_IP_address() -> str:
-    """Get the client's IP address via a GET request to an API service.
 
-    Returns:
-        str: An IPv4 or IPv6 address.
-    """
     return requests.get(
         "https://ident.me/", headers={"User-Agent": "Aderoju"}
     ).text
 
-def get_forecast_detail(weather_data: list, timezone: str) -> dict:
-    """Get climatic details forecasts as a time-zone-aware pandas DataFrame.
+def build_forecast(weather):
 
-    Args:
-        weather_data (list): Time series data with hourly weather forecasts.
-        timezone (str): Time zone information e.g. 'GMT'.
+    now = weather.index[1]
 
-    Returns:
-        dict: climatic information forecast time series data.
-    """
-    # Extract the current hour data plus the next 12 hours hourly data
-    weather_data = weather_data[:14]
-
-    time_info = [entry["time"] for entry in weather_data]
-    
-    details = ('dew_point_temperature','wind_speed','relative_humidity',
-               'cloud_area_fraction_medium','air_pressure_at_sea_level',"air_temperature")
-        
-    columns = ("dew_point","wind_speed","humidity","cloud_area","pressure","temperatue")
-
-    climatic_info ={
-            col:[entry["data"]["instant"]["details"][detail] for entry in weather_data] 
-            for col, detail in zip(columns,details)}
-    
-    climatic_data = pd.DataFrame(climatic_info, index=time_info)
-
-    # Make the index time-zone aware
-    climatic_data.index = pd.to_datetime(climatic_data.index).tz_convert(timezone)
-    
-    return  {f"{time}h": {
-        "Pressure": f"{climatic_data.loc[climatic_data.index[time+1],'pressure']}hPa",
-        "Temperature": f"{climatic_data.loc[climatic_data.index[time+1],'temperatue']}°C",
-        "Cloud": f"{climatic_data.loc[climatic_data.index[time+1],'cloud_area']}%",
-        "Humidity": f"{climatic_data.loc[climatic_data.index[time+1],'humidity']}%",
-        "Dew point": f"{climatic_data.loc[climatic_data.index[time+1],'dew_point']}°",
-        "Wind": f"{round(climatic_data.loc[climatic_data.index[time+1],'wind_speed']*3.6,1)}km/h",
-    } for time in [1, 6, 12]
+    targets = {
+        "1h": now + timedelta(hours=1),
+        "6h": now + timedelta(hours=6),
+        "12h": now + timedelta(hours=12),
     }
 
-def climatic_condition(
-    temperature: float,
-    humidity: float,
-    cloud_fraction: float,
-    wind_speed: float
-) -> str:
-    """
-    Determine climatic condition based on weather parameters.
-    """
+    result = {}
+    symbol = {}
 
-    # --- Extreme / dominant conditions first ---
-    if wind_speed > 30 and cloud_fraction > 70:
-        return "Stormy"
+    for label, target_time in targets.items():
 
-    if wind_speed > 30 and temperature > 30:
-        return "Intense Sun"
+        # get future rows only
+        future = weather[(weather.index > now) & (weather.index <= target_time)]
 
-    # --- Rain conditions ---
-    if humidity > 80:
-        if cloud_fraction > 75:
-            if wind_speed > 8:
-                return "Heavy Rainfall"
-            return "Rainy"
-        if cloud_fraction >= 50:
-            return "Light Rain"
+        if not future.empty:
+            row = future.iloc[-1]  # last future point
 
-    # --- Cloud coverage ---
-    if cloud_fraction > 75:
-        return "Overcast"
-    if 50 <= cloud_fraction <= 75:
-        return "Cloudy"
-    if 20 <= cloud_fraction < 50:
-        return "Partly Cloudy"
+        symbol[label] = row.get('symbol')  # safer key
 
-    # --- Dry / clear conditions ---
-    if humidity < 40:
-        if temperature > 30:
-            return "Very Hot"
-        if cloud_fraction < 20:
-            return "Clear Sky"
-        return "Dry"
+        result[label] = {
+            "Temperature": f"{row['temperature']}°C",
+            "Humidity": f"{row['humidity']}%",
+            "Wind": f"{round(row['wind_speed'] * 3.6, 1)} km/h",
+            "Cloud": f"{row['cloud']}%"
+        }
 
-    # --- Temperature-based refinement ---
-    if temperature < 25:
-        return "Cool"
-    if 25 <= temperature <= 30:
-        return "Warm"
-    if temperature > 30:
-        if humidity > 60:
-            return "Hot and Humid"
-        return "Hot"
-
-    return "Moderate"
+    return result, symbol
