@@ -2,43 +2,36 @@ import plotly.express as px
 from pandas import Series
 import plotly.io as pio
 import json
-
+from datetime import  timedelta
 
 def get_graphs(temp_ts: Series) -> dict:
-    """Plot graphs using the temperature forecast data.
 
-    Args:
-        temp_ts (Series): Air temperature time series data.
-
-    Returns:
-        dict: A 24h forecast line plot and 10d forecast bar plot as JSON objects.
-    """
     return {
         "24h": plot_24hr_forecast(temp_ts),
         "10d": plot_10day_forecast(temp_ts),
     }
 
 
-def plot_24hr_forecast(temp_ts: Series) -> dict:
-    """Get a graph of the air temperature over the next 24 hours.
+def plot_24hr_forecast(weather_data) -> dict:
+    
+    now = weather_data.index[1]
 
-    Args:
-        temp_ts (Series): Air temperature time series data.
+    temp24H = weather_data.loc[
+        (weather_data.index > now) &
+        (weather_data.index <= now + timedelta(hours=24)),
+        "temperature"
+    ]
 
-    Returns:
-        dict: A line graph of the 24hr air temperature forecast as a JSON object.
-    """
-    temp24H = temp_ts.iloc[2:26]
     fig = px.line(
         y=temp24H,
         height=280,
-        x=temp24H.index.strftime("%#I %p"),
+        x=temp24H.index.strftime("%I %p").str.lstrip("0"),
         title="<b> 24 Hour Forecast </b>",
         line_shape='spline',
-        text=round(temp24H, 0)
+        text=temp24H.round(0)
     )
 
-    configure_fig(fig, temp24H.min() - 0.5, temp24H.max() + 0.5, "Time", "Temperature (°C)")
+    configure_fig(fig, temp24H.min() - 1, temp24H.max() + 1, "Time", "Temperature (°C)")
 
     fig.update_traces(
         hovertemplate="<b>Time</b>: %{x}<br><b>Temp</b>: %{y}°C<br>",
@@ -50,17 +43,9 @@ def plot_24hr_forecast(temp_ts: Series) -> dict:
 
     return json.loads(pio.to_json(fig))
 
+def plot_10day_forecast(weather_data) -> dict:
+    temp10D = weather_data["temperature"].resample("1D").agg(["max", "min"])
 
-def plot_10day_forecast(temp_ts: Series) -> dict:
-    """Get a bar graph of the maximum and minimum temperature over the next 10 days.
-
-    Args:
-        temp_ts (Series): Air temperature time series data.
-
-    Returns:
-        dict: A bar graph of the 10-day max & min temperature forecast as a JSON object.
-    """
-    temp10D = temp_ts.resample("1D").agg(["max", "min"])
     fig = px.bar(
         temp10D,
         barmode="group",
@@ -69,12 +54,13 @@ def plot_10day_forecast(temp_ts: Series) -> dict:
         title="<b> 10 Day Forecast </b>"
     )
 
-    configure_fig(fig, None, None, "Day", "Temperature (°C)")
+    configure_fig(fig, None, None, "Day", "Temp(°C)")
 
-    fig.update_traces(hovertemplate="<b>%{y}°C</b>")
+    fig.update_traces(
+        hovertemplate="<b>%{y}°C</b>"
+    )
 
     return json.loads(pio.to_json(fig))
-
 
 def configure_fig(fig, y_min=None, y_max=None, x_title="", y_title=""):
     """Apply common configuration to a Plotly figure.
