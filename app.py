@@ -1,155 +1,170 @@
 from flask import Flask, render_template, request
-from weather_app.weather_info import process_weather_forecast
 from flask_socketio import SocketIO
+from weather_app.weather_info import process_weather_forecast
+from weather_app.auxiliary import get_location
 import logging
 import time
 
-clients = {}
-last_weather_cache = {}
-
+# ----------------------------
+# APP SETUP
+# ----------------------------
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Therebelxy'
 
 socketio = SocketIO(
     app,
-    async_mode='gevent',
-    cors_allowed_origins="*",
-    logger=True,
-    engineio_logger=True
+    async_mode='eventlet',   # 👈 production-safe on Render
+    cors_allowed_origins="*"
 )
 
-# Logging
 logging.basicConfig(
     filename='Log.txt',
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
+# ----------------------------
+# STATE (per client)
+# ----------------------------
+clients = {}
+last_weather_cache = {}
+
+# ----------------------------
+# ROUTES
+# ----------------------------
 @app.route("/")
 def main():
     return render_template("index.html")
 
-def get_location(ip_address: str) -> dict:
-    """Get city, country, latitude, longitude and timezone information for a
-    location, based on IP address.
-
-    Args:
-        ip_address (str): An IPv4/IPv6 address, or a domain name.
-
-    Returns:
-        dict: Location details.
-    """
-    location_info = requests.get(
-        f"http://ip-api.com/json/{ip_address}",
-        headers={"User-Agent": "Aderoju"},
-    timeout=5).json()
-
-    return {
-        key: location_info[key]
-        for key in ("city", "country", "lat", "lon", "timezone")
-    }
+# ----------------------------
 # SAFE LOCATION RESOLVER
+# ----------------------------
 def resolve_location(payload, sid=None):
-    source = payload.get("source")
+    """
+    NEVER depends on Flask request context.
+    Fully safe for background worker.
+    """
 
-    # 1. GPS (preferred)
-    if source == "gps" and payload.get("lat") and payload.get("lon"):
-        return payload["lat"], payload["lon"]
+    # 1. GPS preferred
+    if payload.get("source") == "gps":
+        lat = payload.get("lat")
+        lon = payload.get("lon")
+        if lat and lon:
+            return lat, lon
 
-    # 2. IP fallback (ONLY if we are inside request context)
+    # 2. fallback: cached client location
+    cached = clients.get(sid, {})
+    if cached.get("lat") and cached.get("lon"):
+        return cached["lat"], cached["lon"]
+
+    # 3. fallback: IP lookup (ONLY if available)
     try:
-        ip = request.headers.get("X-Forwarded-For", request.remote_addr)
-        location = get_location(ip)
-        return location["lat"], location["lon"]
-    except RuntimeError:
-        # worker thread fallback (NO request context here)
-        cached = clients.get(sid, {})
-        if cached.get("lat") and cached.get("lon"):
-            return cached["lat"], cached["lon"]
+        ip = cached.get("ip")
+        if ip:
+            loc = get_location(ip)
+            return loc["lat"], loc["lon"]
+    except Exception as e:
+        logging.warning(f"IP fallback failed: {e}")
 
-        return None, None
+    return None, None
 
+# ----------------------------
 # BACKGROUND WORKER
+# ----------------------------
 def weather_worker():
     while True:
         try:
             for sid, payload in list(clients.items()):
 
-                lat, lon = resolve_location(payload, sid=sid)
+                lat, lon = resolve_location(payload, sid)
 
-                if lat is None or lon is None:
+                if not lat or not lon:
                     continue
 
                 weather_data = process_weather_forecast(lat=lat, lon=lon)
 
-                new_payload = {
-                    "header": weather_data['headline'],
-                    "climatic": weather_data['climatic'],
+                update = {
+                    "header": weather_data["headline"],
+                    "climatic": weather_data["climatic"],
                     "symbol": weather_data.get("symbol"),
                     "timestamp": int(time.time())
                 }
 
-                # only emit if changed
-                if last_weather_cache.get(sid) != new_payload:
-                    socketio.emit('live_update', new_payload, to=sid)
-                    last_weather_cache[sid] = new_payload
+                # avoid unnecessary emits
+                if last_weather_cache.get(sid) != update:
+                    socketio.emit("live_update", update, to=sid)
+                    last_weather_cache[sid] = update
 
         except Exception as e:
-            print("Weather worker error:", e)
+            logging.error(f"Worker error: {e}")
 
         socketio.sleep(15)
 
-# START WORKER ONCE
-def start_worker():
-    socketio.start_background_task(weather_worker)
+# ----------------------------
+# SAFE WORKER START
+# ----------------------------
+worker_started = False
 
+def start_worker_once():
+    global worker_started
+    if not worker_started:
+        socketio.start_background_task(weather_worker)
+        worker_started = True
 
-start_worker()
+# IMPORTANT: DO NOT AUTO-RUN HERE IN RENDER
+# start_worker_once()
 
-
+# ----------------------------
 # SOCKET EVENTS
-@socketio.on('connect')
+# ----------------------------
+@socketio.on("connect")
 def handle_connect():
-    clients[request.sid] = {"lat": None, "lon": None, "source": "gps"}
-    logging.info('Client connected')
+    clients[request.sid] = {
+        "lat": None,
+        "lon": None,
+        "ip": request.remote_addr
+    }
+    logging.info("Client connected")
 
 
-@socketio.on('disconnect')
+@socketio.on("disconnect")
 def handle_disconnect():
     clients.pop(request.sid, None)
     last_weather_cache.pop(request.sid, None)
-    logging.info('Client disconnected')
+    logging.info("Client disconnected")
 
 
-@socketio.on('set_location')
+@socketio.on("set_location")
 def set_location(data):
-    clients[request.sid] = {
+    clients[request.sid].update({
         "lat": data.get("lat"),
         "lon": data.get("lon"),
         "source": data.get("source")
-    }
+    })
 
 
-@socketio.on('start_stream')
+@socketio.on("start_stream")
 def start_stream(data):
-    lat, lon = resolve_location(data, sid=request.sid)
+    lat, lon = resolve_location(data, request.sid)
 
-    if lat is None or lon is None:
+    if not lat or not lon:
         return
 
     weather_data = process_weather_forecast(lat=lat, lon=lon)
 
-    socketio.emit('live_update', {
-        "header": weather_data['headline'],
-        "climatic": weather_data['climatic'],
-        "graph1": weather_data['graphs']["24h"],
-        "graph2": weather_data['graphs']["10d"],
-        "icons": weather_data['weather_icons'],
-        "forecast": weather_data['forecast'],
+    socketio.emit("live_update", {
+        "header": weather_data["headline"],
+        "climatic": weather_data["climatic"],
+        "graph1": weather_data["graphs"]["24h"],
+        "graph2": weather_data["graphs"]["10d"],
+        "icons": weather_data["weather_icons"],
+        "forecast": weather_data["forecast"],
         "symbol": weather_data.get("symbol")
     }, to=request.sid)
 
-
-# RUN APP
+# ----------------------------
+# APP START
+# ----------------------------
 if __name__ == "__main__":
+    start_worker_once()
     socketio.run(app, host="0.0.0.0", port=5000)
