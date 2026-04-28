@@ -1,7 +1,7 @@
 import requests
-import requests_cache
+#import requests_cache
 from datetime import  timedelta
-requests_cache.install_cache(expire_after=600)
+#requests_cache.install_cache(expire_after=600)
 
 def get_location(ip_address: str) -> dict:
     """Get city, country, latitude, longitude and timezone information for a
