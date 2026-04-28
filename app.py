@@ -11,7 +11,12 @@ last_weather_cache = {}
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Therebelxy'
 
-socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins="*",logger=True)
+socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins="*")
+
+# Start worker
+def start_worker():
+    socketio.start_background_task(weather_worker)
+start_worker()
 
 # Initialize logging
 logging.basicConfig(filename='Log.txt',level=logging.INFO,
@@ -104,5 +109,4 @@ def resolve_location(payload):
     return location["lat"], location["lon"]
 
 if __name__ == "__main__":
-    start_worker()
     socketio.run(app, host="0.0.0.0", port=5000)
