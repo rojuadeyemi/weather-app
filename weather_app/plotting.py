@@ -1,10 +1,8 @@
 import plotly.express as px
-from pandas import Series
 import plotly.io as pio
 import json
-from datetime import  timedelta
 
-def get_graphs(temp_ts: Series) -> dict:
+def get_graphs(temp_ts) -> dict:
 
     return {
         "24h": plot_24hr_forecast(temp_ts),
@@ -15,6 +13,7 @@ def get_graphs(temp_ts: Series) -> dict:
 def plot_24hr_forecast(weather_data) -> dict:
     
     now = weather_data.index[1]
+    from datetime import  timedelta
 
     temp24H = weather_data.loc[
         (weather_data.index > now) &
@@ -28,17 +27,19 @@ def plot_24hr_forecast(weather_data) -> dict:
         x=temp24H.index.strftime("%I %p").str.lstrip("0"),
         title="<b> 24 Hour Forecast </b>",
         line_shape='spline',
-        text=temp24H.round(0)
+        text=temp24H.round(1)
     )
 
-    configure_fig(fig, temp24H.min() - 1, temp24H.max() + 1, "Time", "Temperature (°C)")
+    configure_fig(fig, temp24H.min() - 1, temp24H.max() + 1, "", "Temperature (°C)")
 
     fig.update_traces(
         hovertemplate="<b>Time</b>: %{x}<br><b>Temp</b>: %{y}°C<br>",
         marker_size=4,
         line_smoothing=1,
         textposition='top center',
-        line=dict(color="#2C3E50", width=2)
+        line=dict(color="#2C3E50", width=2),
+        textfont_size=10,
+        textposition="outside"
     )
 
     return json.loads(pio.to_json(fig))
@@ -51,14 +52,18 @@ def plot_10day_forecast(weather_data) -> dict:
         barmode="group",
         color_discrete_sequence=["#ec3453", "#0099cc"],
         height=250,
-        title="<b> 10 Day Forecast </b>"
+        title="<b> 10 Day Forecast </b>",
+        text_auto=True
     )
 
     configure_fig(fig, None, None, "Day", "Temp(°C)")
 
-    fig.update_traces(
-        hovertemplate="<b>%{y}°C</b>"
+    fig.update_traces(textposition="outside",
+        hovertemplate="<b>%{y}°C</b>",
+        textfont_size=10
     )
+
+    fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
     return json.loads(pio.to_json(fig))
 
