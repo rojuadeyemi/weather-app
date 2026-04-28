@@ -39,7 +39,7 @@ def weather_worker():
                     "timestamp": int(time.time())
                 }
 
-                # ONLY SEND IF CHANGED
+                # ONLY SEND IF CHANGED 
                 if last_weather_cache.get(sid) != new_payload:
                     socketio.emit('live_update', new_payload, to=sid)
                     last_weather_cache[sid] = new_payload
