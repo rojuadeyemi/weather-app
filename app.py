@@ -13,11 +13,6 @@ app.config['SECRET_KEY'] = 'Therebelxy'
 
 socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins="*")
 
-# Start worker
-def start_worker():
-    socketio.start_background_task(weather_worker)
-start_worker()
-
 # Initialize logging
 logging.basicConfig(filename='Log.txt',level=logging.INFO,
                     format=' %(asctime)s - %(levelname)s- %(message)s')
@@ -54,8 +49,10 @@ def weather_worker():
 
         socketio.sleep(15)  # faster but lighter
 
+# Start worker
 def start_worker():
     socketio.start_background_task(weather_worker)
+start_worker()
 
 @socketio.on('connect')
 def handle_connect():
