@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request
 from weather_app.weather_info import process_weather_forecast
-from weather_app.auxiliary import get_location
 from flask_socketio import SocketIO
 import logging
 import time
@@ -30,6 +29,25 @@ logging.basicConfig(
 def main():
     return render_template("index.html")
 
+def get_location(ip_address: str) -> dict:
+    """Get city, country, latitude, longitude and timezone information for a
+    location, based on IP address.
+
+    Args:
+        ip_address (str): An IPv4/IPv6 address, or a domain name.
+
+    Returns:
+        dict: Location details.
+    """
+    location_info = requests.get(
+        f"http://ip-api.com/json/{ip_address}",
+        headers={"User-Agent": "Aderoju"},
+    timeout=5).json()
+
+    return {
+        key: location_info[key]
+        for key in ("city", "country", "lat", "lon", "timezone")
+    }
 # SAFE LOCATION RESOLVER
 def resolve_location(payload, sid=None):
     source = payload.get("source")
@@ -50,7 +68,6 @@ def resolve_location(payload, sid=None):
             return cached["lat"], cached["lon"]
 
         return None, None
-
 
 # BACKGROUND WORKER
 def weather_worker():
