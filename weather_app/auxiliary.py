@@ -1,8 +1,7 @@
 import requests
-#import requests_cache
 from datetime import  timedelta
-#requests_cache.install_cache(expire_after=600)
-
+import requests_cache
+requests_cache.install_cache(expire_after=600)
 def get_location(ip_address: str) -> dict:
     """Get city, country, latitude, longitude and timezone information for a
     location, based on IP address.
@@ -16,7 +15,7 @@ def get_location(ip_address: str) -> dict:
     location_info = requests.get(
         f"http://ip-api.com/json/{ip_address}",
         headers={"User-Agent": "Aderoju"},
-    ).json()
+    timeout=5).json()
 
     return {
         key: location_info[key]
@@ -31,7 +30,7 @@ def get_location_by_coords(lat: float, lon: float) -> dict:
             "lon": lon,
             "format": "json"
         },
-        headers={"User-Agent": "weather-app"}
+        headers={"User-Agent": "weather-app"},timeout=5
     ).json()
 
     addr = res.get("address", {})
@@ -39,7 +38,7 @@ def get_location_by_coords(lat: float, lon: float) -> dict:
     response = requests.get(
             "http://ip-api.com/json/",
             params={"query": f"{lat},{lon}"}
-        ).json()
+        ,timeout=5).json()
 
     return {
         "city": (
@@ -60,7 +59,7 @@ def get_weather_info(lat: float, lon: float):
     response = requests.get(
         "https://api.met.no/weatherapi/locationforecast/2.0/complete",
         params={"lat": lat, "lon": lon},
-        headers={"User-Agent": "Aderoju"},
+        headers={"User-Agent": "Aderoju"},timeout=5
     ).json()["properties"]["timeseries"]
 
     records = []
