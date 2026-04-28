@@ -2,15 +2,64 @@ var socket = io({
     transports: ['websocket']
 });
 
-socket.on('connect', () => {
-    navigator.geolocation.getCurrentPosition((pos) => {
-        socket.emit('set_location', {
-            lat: pos.coords.latitude,
-            lon: pos.coords.longitude
-        });
-    });
-});
+function sendBestLocation() {
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const accuracy = pos.coords.accuracy;
 
+            console.log("GPS accuracy:", accuracy);
+
+            if (accuracy < 1000) {
+                // GOOD GPS → use it
+                socket.emit('set_location', {
+                    lat: pos.coords.latitude,
+                    lon: pos.coords.longitude,
+                    source: "gps"
+                });
+            } else {
+                // BAD GPS: fallback to IP
+                console.warn("Low GPS accuracy, using IP fallback");
+
+                socket.emit('set_location', {
+                    lat: null,
+                    lon: null,
+                    source: "ip"
+                });
+            }
+
+            // still start stream
+            socket.emit('start_stream', {
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude,
+                source: accuracy < 1000 ? "gps" : "ip"
+            });
+        },
+        (err) => {
+            console.error("GPS failed, using IP fallback", err);
+
+            socket.emit('set_location', {
+                lat: null,
+                lon: null,
+                source: "ip"
+            });
+
+            socket.emit('start_stream', {
+                lat: null,
+                lon: null,
+                source: "ip"
+            });
+        },
+        {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000
+        }
+    );
+}
+
+socket.on('connect', () => {
+    sendBestLocation();
+});
 
 function setWeatherBackground(symbol) {
     if (!symbol) return;
@@ -163,6 +212,8 @@ function formatTime(now) {
     return `${weekday} ${day}, ${time}`;
 }
 
+let lastRendered = "";
+
 function startLiveClock() {
     setInterval(() => {
         const el = document.getElementById('climatic');
@@ -171,7 +222,12 @@ function startLiveClock() {
         const now = new Date();
         const formatted = formatTime(now);
 
-        el.innerText = `${currentCondition} • ${formatted}`;
+        const text = `${currentCondition} • ${formatted}`;
+
+        if (text !== lastRendered) {
+            el.innerText = text;
+            lastRendered = text;
+        }
     }, 1000);
 }
 
