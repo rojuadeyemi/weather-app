@@ -38,8 +38,7 @@ def plot_24hr_forecast(weather_data) -> dict:
         line_smoothing=1,
         textposition='top center',
         line=dict(color="#2C3E50", width=2),
-        textfont_size=10,
-        textposition="outside"
+        textfont_size=10
     )
 
     return json.loads(pio.to_json(fig))
