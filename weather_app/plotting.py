@@ -61,7 +61,6 @@ def plot_10day_forecast(weather_data) -> dict:
         hovertemplate="<b>%{y}°C</b>",
         textfont_size=10
     )
-
     fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
     return json.loads(pio.to_json(fig))
