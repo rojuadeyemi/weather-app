@@ -1,8 +1,6 @@
 
 def process_weather_forecast(lat=None, lon=None):
-    """
-    Lightweight weather processor (frontend handles time).
-    """
+
     from weather_app.auxiliary import get_location_by_coords, get_weather_info,convert_to_fahr
     location = get_location_by_coords(lat, lon)
     
@@ -104,7 +102,7 @@ def build_forecast(weather):
             "Temperature": f"{row['temperature']}°C",
             "Humidity": f"{row['humidity']}%",
             "Wind": f"{round(row['wind_speed'] * 3.6, 1)} km/h",
-            "Cloud": f"{row['cloud']}%"
+            "Cloud Cover": f"{row['cloud']}%"
         }
 
     return result, symbol
