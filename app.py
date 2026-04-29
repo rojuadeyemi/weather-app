@@ -5,15 +5,13 @@ from weather_app.auxiliary import get_location
 import logging
 import time
 
-# ----------------------------
 # APP SETUP
-# ----------------------------
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Therebelxy'
 
 socketio = SocketIO(
     app,
-    async_mode='eventlet',   # 👈 production-safe on Render
+    async_mode='eventlet',
     cors_allowed_origins="*"
 )
 
@@ -23,27 +21,18 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
-# ----------------------------
 # STATE (per client)
-# ----------------------------
 clients = {}
 last_weather_cache = {}
 
-# ----------------------------
 # ROUTES
-# ----------------------------
 @app.route("/")
 def main():
     return render_template("index.html")
 
-# ----------------------------
 # SAFE LOCATION RESOLVER
-# ----------------------------
 def resolve_location(payload, sid=None):
-    """
-    NEVER depends on Flask request context.
-    Fully safe for background worker.
-    """
+
 
     # 1. GPS preferred
     if payload.get("source") == "gps":
@@ -68,9 +57,7 @@ def resolve_location(payload, sid=None):
 
     return None, None
 
-# ----------------------------
 # BACKGROUND WORKER
-# ----------------------------
 def weather_worker():
     while True:
         try:
@@ -100,9 +87,7 @@ def weather_worker():
 
         socketio.sleep(15)
 
-# ----------------------------
 # SAFE WORKER START
-# ----------------------------
 worker_started = False
 
 def start_worker_once():
@@ -111,14 +96,12 @@ def start_worker_once():
         socketio.start_background_task(weather_worker)
         worker_started = True
 
-# IMPORTANT: DO NOT AUTO-RUN HERE IN RENDER
-# start_worker_once()
-
-# ----------------------------
 # SOCKET EVENTS
-# ----------------------------
 @socketio.on("connect")
 def handle_connect():
+    if not clients:
+        start_worker_once()
+        
     clients[request.sid] = {
         "lat": None,
         "lon": None,
@@ -162,9 +145,7 @@ def start_stream(data):
         "symbol": weather_data.get("symbol")
     }, to=request.sid)
 
-# ----------------------------
 # APP START
-# ----------------------------
 if __name__ == "__main__":
     start_worker_once()
     socketio.run(app, host="0.0.0.0", port=5000)
