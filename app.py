@@ -72,11 +72,12 @@ def weather_worker():
             for sid, payload in list(clients.items()):
 
                 lat, lon = resolve_location(payload, sid)
+                tz = payload.get("timezone")
 
                 if not lat or not lon:
                     continue
 
-                weather_data = process_weather_forecast(lat=lat, lon=lon)
+                weather_data = process_weather_forecast(lat=lat, lon=lon,tz=tz)
 
                 update = {
                     "header": weather_data["headline"],
@@ -130,6 +131,7 @@ def set_location(data):
     clients[request.sid].update({
         "lat": data.get("lat"),
         "lon": data.get("lon"),
+        "timezone": data.get("timezone"),
         "source": data.get("source")
     })
 
@@ -141,7 +143,8 @@ def start_stream(data):
     if not lat or not lon:
         return
 
-    weather_data = process_weather_forecast(lat=lat, lon=lon)
+    tz = data.get("timezone")
+    weather_data = process_weather_forecast(lat=lat, lon=lon,tz=tz)
 
     socketio.emit("live_update", {
         "header": weather_data["headline"],
