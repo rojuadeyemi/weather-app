@@ -87,7 +87,6 @@ def get_weather_info(lat: float, lon: float):
     # convert time
     df = df.set_index("time")
     df.index = pd.to_datetime(df.index, utc=True)
-    df.index = df.index.tz_convert(None)
 
     return df
 
