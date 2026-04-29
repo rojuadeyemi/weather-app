@@ -1,18 +1,9 @@
 import requests
-from datetime import  timedelta
 import requests_cache
 requests_cache.install_cache(expire_after=600)
 
 def get_location(ip_address: str) -> dict:
-    """Get city, country, latitude, longitude and timezone information for a
-    location, based on IP address.
 
-    Args:
-        ip_address (str): An IPv4/IPv6 address, or a domain name.
-
-    Returns:
-        dict: Location details.
-    """
     location_info = requests.get(
         f"http://ip-api.com/json/{ip_address}",
         headers={"User-Agent": "Aderoju"},
@@ -22,7 +13,6 @@ def get_location(ip_address: str) -> dict:
         key: location_info[key]
         for key in ("city", "country", "lat", "lon", "timezone")
     }
-
 
 def get_location_by_coords(lat: float, lon: float) -> dict:
     res = requests.get(
@@ -55,7 +45,6 @@ def get_location_by_coords(lat: float, lon: float) -> dict:
         "lon": lon,
         "timezone": response.get("timezone", "UTC")
     }
-
 
 def get_weather_info(lat: float, lon: float):
     response = requests.get(
