@@ -1,14 +1,12 @@
 from weather_app.auxiliary import get_location_by_coords, get_weather_info,convert_to_fahr
-from datetime import datetime, timedelta
-import pytz
+from datetime import datetime
 from weather_app.plotting import get_graphs
 import numpy as np
 
 
-def get_currrent_time(weather_data,timezone):
+def get_currrent_time(weather_data):
 
-    tz = pytz.timezone(timezone)
-    now = datetime.now(tz)
+    now = datetime.now()
 
     closest_idx = np.abs(weather_data.index - now).argmin()
 
@@ -17,11 +15,10 @@ def get_currrent_time(weather_data,timezone):
 def process_weather_forecast(lat=None, lon=None):
 
     location = get_location_by_coords(lat, lon)
-    timezone = location["timezone"]
     
-    weather_data = get_weather_info(location["lat"], location["lon"],timezone)
+    weather_data = get_weather_info(location["lat"], location["lon"],location["timezone"])
 
-    closest_idx = get_currrent_time(weather_data, timezone)
+    closest_idx = get_currrent_time(weather_data)
     current = weather_data.iloc[closest_idx]
 
     symbol = current.get("symbol", "clearsky_day")
