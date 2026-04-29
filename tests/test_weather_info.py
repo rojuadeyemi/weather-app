@@ -3,12 +3,11 @@ from weather_app.auxiliary import (get_location, get_location_by_coords,
 
 class TestUtilityFunctions:
     WEATHER_INFO = get_weather_info(
-        lat=6.4474, lon=3.3903)
+        lat=6.4474, lon=3.3903,timezone="Africa/Lagos")
     
     LOCATION_BY_IP = get_location("102.93.9.182")
 
     LOCATION_BY_COORD = get_location_by_coords(lat=6.4474, lon=3.3903)
-    print(LOCATION_BY_COORD)
 
 
     def test_get_location(self):
