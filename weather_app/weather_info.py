@@ -1,21 +1,36 @@
+from weather_app.auxiliary import get_location_by_coords, get_weather_info,convert_to_fahr
+from datetime import datetime, timedelta
+import pytz
+from weather_app.plotting import get_graphs
+import numpy as np
+
+
+def get_currrent_time(weather_data,timezone):
+
+    tz = pytz.timezone(timezone)
+    now = datetime.now(tz)
+
+    closest_idx = np.abs(weather_data.index - now).argmin()
+
+    return closest_idx
 
 def process_weather_forecast(lat=None, lon=None):
 
-    from weather_app.auxiliary import get_location_by_coords, get_weather_info,convert_to_fahr
     location = get_location_by_coords(lat, lon)
+    timezone = location["timezone"]
     
-    weather_data = get_weather_info(location["lat"], location["lon"])
+    weather_data = get_weather_info(location["lat"], location["lon"],timezone)
 
-    current = weather_data.iloc[1]
-    symbol = current["symbol"] or "clearsky_day"
+    closest_idx = get_currrent_time(weather_data, timezone)
+    current = weather_data.iloc[closest_idx]
+
+    symbol = current.get("symbol", "clearsky_day")
     temp_c = current["temperature"]
     temp_F = convert_to_fahr(temp_c)
-    forecast, icons = build_forecast(weather_data)
-
-    from weather_app.plotting import get_graphs
+    forecast, icons = build_forecast(weather_data,closest_idx)
 
     return {
-        "graphs": get_graphs(weather_data),
+        "graphs": get_graphs(weather_data,closest_idx),
         "headline": f"{temp_c:.0f}°C ({temp_F :.0f}°F) in {location['city']}, {location['country']}",
         "climatic": map_weather_condition(symbol),
         "symbol": symbol,
@@ -64,14 +79,12 @@ def map_weather_condition(symbol_code: str) -> str:
 
     return mapping.get(base_code, base_code.replace("_", " ").title())
 
-def build_forecast(weather):
-    now = weather.index[1]
+def build_forecast(weather,now):
 
-    from datetime import timedelta
     targets = {
-        "1h": now + timedelta(hours=1),
-        "3h": now + timedelta(hours=3),
-        "6h": now + timedelta(hours=6),
+        "1h": now + 1,
+        "3h": now + 3,
+        "6h": now + 6,
     }
 
     result = {}
@@ -80,23 +93,12 @@ def build_forecast(weather):
     for label, target_time in targets.items():
 
         # temperature window
-        window = weather[(weather.index > now) & (weather.index <= target_time)]
-
-        if window.empty:
-            continue
-
-        row = window.iloc[-1]
+        row = weather.iloc[target_time]
 
         # SYMBOL shifted back by 1 hour
-        symbol_time = target_time - timedelta(hours=1)
+        symbol_time = target_time - 1
 
-        past_window = weather[weather.index <= symbol_time]
-
-        if not past_window.empty:
-            symbol_row = past_window.iloc[-1]
-            symbol[label] = symbol_row.get("symbol", None)
-        else:
-            symbol[label] = row.get('symbol', None)
+        symbol[label] = weather.iloc[symbol_time].get("symbol")
 
         result[label] = {
             "Temperature": f"{row['temperature']}°C",
