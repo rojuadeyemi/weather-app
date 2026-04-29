@@ -55,9 +55,9 @@ def plot_10day_forecast(weather_data) -> dict:
         text_auto=True
     )
 
-    configure_fig(fig, None, None, "Day", "Temp(°C)")
+    configure_fig(fig, temp10D.min() - 1, temp10D.max() + 5, "Day", "Temp(°C)")
 
-    fig.update_traces(textposition="outside",
+    fig.update_traces(
         hovertemplate="<b>%{y}°C</b>",
         textfont_size=10
     )
@@ -67,15 +67,7 @@ def plot_10day_forecast(weather_data) -> dict:
     return json.loads(pio.to_json(fig))
 
 def configure_fig(fig, y_min=None, y_max=None, x_title="", y_title=""):
-    """Apply common configuration to a Plotly figure.
 
-    Args:
-        fig (Figure): The Plotly figure to configure.
-        y_min (float, optional): Minimum value for the y-axis. Defaults to None.
-        y_max (float, optional): Maximum value for the y-axis. Defaults to None.
-        x_title (str, optional): Title for the x-axis. Defaults to "".
-        y_title (str, optional): Title for the y-axis. Defaults to "".
-    """
     fig.update_xaxes(title_text=f"<b>{x_title}</b>", fixedrange=True, showgrid=False)
     fig.update_yaxes(title_text=y_title, fixedrange=True, range=[y_min, y_max] if y_min is not None and y_max is not None else None)
     
