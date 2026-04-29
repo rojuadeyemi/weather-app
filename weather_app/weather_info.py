@@ -3,13 +3,13 @@ from weather_app.auxiliary import (get_location_by_coords, get_weather_info,
 from weather_app.plotting import get_graphs
 
 
-def process_weather_forecast(lat=None, lon=None):
+def process_weather_forecast(lat=None, lon=None,tz=None):
 
     location = get_location_by_coords(lat, lon)
     
-    weather_data = get_weather_info(location["lat"], location["lon"])
+    weather_data = get_weather_info(location["lat"], location["lon"],tz)
 
-    closest_idx = get_currrent_time(weather_data)
+    closest_idx = get_currrent_time(weather_data,tz=tz)
     current = weather_data.iloc[closest_idx]
 
     symbol = current.get("symbol", "clearsky_day")
