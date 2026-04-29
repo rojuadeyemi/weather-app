@@ -1,7 +1,17 @@
 import requests
 import requests_cache
 import pandas as pd
+import numpy as np
 requests_cache.install_cache(expire_after=600)
+
+def get_currrent_time(weather_data):
+    
+    now = pd.Timestamp.now()
+
+    closest_idx = np.abs(weather_data.index - now).argmin()
+
+    return closest_idx
+
 
 def get_location(ip_address: str) -> dict:
 
@@ -12,7 +22,7 @@ def get_location(ip_address: str) -> dict:
 
     return {
         key: location_info[key]
-        for key in ("city", "country", "lat", "lon", "timezone")
+        for key in ("city", "country", "lat", "lon")
     }
 
 def get_location_by_coords(lat: float, lon: float) -> dict:
@@ -28,11 +38,6 @@ def get_location_by_coords(lat: float, lon: float) -> dict:
 
     addr = res.get("address", {})
 
-    response = requests.get(
-            "http://ip-api.com/json/",
-            params={"query": f"{lat},{lon}"}
-        ,timeout=5).json()
-
     return {
         "city": (
             addr.get("name")
@@ -43,11 +48,10 @@ def get_location_by_coords(lat: float, lon: float) -> dict:
         ),
         "country": addr.get("state", "Unknown"),
         "lat": lat,
-        "lon": lon,
-        "timezone": response.get("timezone", "UTC")
+        "lon": lon
     }
 
-def get_weather_info(lat: float, lon: float,timezone:str):
+def get_weather_info(lat: float, lon: float):
     response = requests.get(
         "https://api.met.no/weatherapi/locationforecast/2.0/complete",
         params={"lat": lat, "lon": lon},
@@ -78,12 +82,9 @@ def get_weather_info(lat: float, lon: float,timezone:str):
 
     df = pd.DataFrame(records)
 
-    print(df.loc[0,'time'])
-
     # convert time
     df = df.set_index("time")
-    df.index = pd.to_datetime(df.index).tz_convert(timezone)
-    print(df.index[0])
+    df.index = pd.to_datetime(df.index).tz_localize(None)
 
     return df
 
