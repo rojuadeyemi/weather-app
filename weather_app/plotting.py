@@ -1,7 +1,6 @@
 import plotly.express as px
 import plotly.io as pio
 import json
-from datetime import  timedelta
 
 def get_graphs(temp_ts,index) -> dict:
 
