@@ -8,6 +8,8 @@ def get_currrent_time(weather_data):
     
     now = pd.Timestamp.now()
 
+    print("NOW:",now)
+
     closest_idx = np.abs(weather_data.index - now).argmin()
 
     return closest_idx
