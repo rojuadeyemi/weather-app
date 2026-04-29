@@ -6,7 +6,7 @@ requests_cache.install_cache(expire_after=600)
 
 def get_currrent_time(weather_data):
     
-    now = pd.Timestamp.now()
+    now = pd.Timestamp.utcnow()
 
     print("NOW:",now)
 
@@ -86,7 +86,8 @@ def get_weather_info(lat: float, lon: float):
 
     # convert time
     df = df.set_index("time")
-    df.index = pd.to_datetime(df.index).tz_localize(None)
+    df.index = pd.to_datetime(df.index, utc=True)
+    df.index = df.index.tz_convert(None)
 
     return df
 
