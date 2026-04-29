@@ -1,27 +1,15 @@
-from weather_app.auxiliary import get_location_by_coords, get_weather_info,convert_to_fahr
-import pandas as pd
+from weather_app.auxiliary import (get_location_by_coords, get_weather_info,
+                                   convert_to_fahr,get_currrent_time)
 from weather_app.plotting import get_graphs
-import numpy as np
 
-
-def get_currrent_time(weather_data,timezone):
-
-    now = pd.Timestamp.now(tz=timezone)
-    print("Now", now)
-    print("timezone", timezone)
-
-    closest_idx = np.abs(weather_data.index - now).argmin()
-
-    return closest_idx
 
 def process_weather_forecast(lat=None, lon=None):
 
     location = get_location_by_coords(lat, lon)
-    timezone = location["timezone"]
     
-    weather_data = get_weather_info(location["lat"], location["lon"],timezone)
+    weather_data = get_weather_info(location["lat"], location["lon"])
 
-    closest_idx = get_currrent_time(weather_data, timezone)
+    closest_idx = get_currrent_time(weather_data)
     current = weather_data.iloc[closest_idx]
 
     symbol = current.get("symbol", "clearsky_day")
