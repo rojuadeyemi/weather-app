@@ -4,11 +4,9 @@ import pandas as pd
 import numpy as np
 requests_cache.install_cache(expire_after=600)
 
-def get_currrent_time(weather_data):
-    
-    now = pd.Timestamp.utcnow()
+def get_currrent_time(weather_data,tz):
 
-    print("NOW:",now)
+    now = pd.Timestamp.now(tz=tz)
 
     closest_idx = np.abs(weather_data.index - now).argmin()
 
@@ -53,7 +51,7 @@ def get_location_by_coords(lat: float, lon: float) -> dict:
         "lon": lon
     }
 
-def get_weather_info(lat: float, lon: float):
+def get_weather_info(lat: float, lon: float,timezone):
     response = requests.get(
         "https://api.met.no/weatherapi/locationforecast/2.0/complete",
         params={"lat": lat, "lon": lon},
@@ -86,7 +84,7 @@ def get_weather_info(lat: float, lon: float):
 
     # convert time
     df = df.set_index("time")
-    df.index = pd.to_datetime(df.index, utc=True)
+    df.index =  pd.to_datetime(df.index).tz_convert(timezone)
 
     return df
 
