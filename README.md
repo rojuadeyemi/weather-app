@@ -103,4 +103,4 @@ This is currently rendered at [MyLocation](https://mylocation-app.onrender.com/)
 - [ip-api](http://ip-api.com)  for providing geolocation API
 - [Met Weather](https://api.met.no/) for providing the weather data API
 - [Render](render.com) for provision of free tier deployment of the app.
-- [Nominatim] for the GPS based geolocation data
+- [Nominatim](https://nominatim.openstreetmap.org) for the GPS based geolocation data
