@@ -78,9 +78,12 @@ def get_weather_info(lat: float, lon: float,timezone:str):
 
     df = pd.DataFrame(records)
 
+    print(df.loc[0,'time'])
+
     # convert time
     df = df.set_index("time")
     df.index = pd.to_datetime(df.index).tz_convert(timezone)
+    print(df.index[0])
 
     return df
 
