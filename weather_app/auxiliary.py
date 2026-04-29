@@ -1,5 +1,6 @@
 import requests
 import requests_cache
+import pandas as pd
 requests_cache.install_cache(expire_after=600)
 
 def get_location(ip_address: str) -> dict:
@@ -46,7 +47,7 @@ def get_location_by_coords(lat: float, lon: float) -> dict:
         "timezone": response.get("timezone", "UTC")
     }
 
-def get_weather_info(lat: float, lon: float):
+def get_weather_info(lat: float, lon: float,timezone:str):
     response = requests.get(
         "https://api.met.no/weatherapi/locationforecast/2.0/complete",
         params={"lat": lat, "lon": lon},
@@ -74,12 +75,12 @@ def get_weather_info(lat: float, lon: float):
             "cloud": details.get("cloud_area_fraction"),
             "symbol": symbol
         })
-    import pandas as pd
+
     df = pd.DataFrame(records)
 
     # convert time
-    df["time"] = pd.to_datetime(df["time"])
     df = df.set_index("time")
+    df.index = pd.to_datetime(df.index).tz_convert(timezone)
 
     return df
 
