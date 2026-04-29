@@ -38,6 +38,8 @@ def get_ip():
         return forwarded.split(",")[0].strip()
 
     return request.remote_addr
+print("REMOTE ADDR:", request.remote_addr)
+print("X-FORWARDED-FOR:", request.headers.get("X-Forwarded-For"))
 
 # SAFE LOCATION RESOLVER
 def resolve_location(payload, sid=None):
