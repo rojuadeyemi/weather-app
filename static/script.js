@@ -12,11 +12,13 @@ function sendBestLocation() {
                 ? {
                     lat: pos.coords.latitude,
                     lon: pos.coords.longitude,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     source: "gps"
                 }
                 : {
                     lat: null,
                     lon: null,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     source: "ip"
                 };
 
@@ -33,6 +35,7 @@ function sendBestLocation() {
             const payload = {
                 lat: null,
                 lon: null,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 source: "ip"
             };
 
