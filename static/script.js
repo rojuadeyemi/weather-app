@@ -1,53 +1,43 @@
 var socket = io({
     transports: ['websocket']
 });
-
 function sendBestLocation() {
     navigator.geolocation.getCurrentPosition(
         (pos) => {
             const accuracy = pos.coords.accuracy;
-
             console.log("GPS accuracy:", accuracy);
 
-            if (accuracy < 1000) {
-                // GOOD GPS → use it
-                socket.emit('set_location', {
+            // 🔥 Build payload
+            const payload = (accuracy < 1000)
+                ? {
                     lat: pos.coords.latitude,
                     lon: pos.coords.longitude,
                     source: "gps"
-                });
-            } else {
-                // BAD GPS: fallback to IP
-                console.warn("Low GPS accuracy, using IP fallback");
-
-                socket.emit('set_location', {
+                }
+                : {
                     lat: null,
                     lon: null,
                     source: "ip"
-                });
+                };
+
+            if (payload.source === "ip") {
+                console.warn("Low GPS accuracy, using IP fallback");
             }
 
-            // still start stream
-            socket.emit('start_stream', {
-                lat: pos.coords.latitude,
-                lon: pos.coords.longitude,
-                source: accuracy < 1000 ? "gps" : "ip"
-            });
+            socket.emit('set_location', payload);
+            socket.emit('start_stream', payload);
         },
         (err) => {
             console.error("GPS failed, using IP fallback", err);
 
-            socket.emit('set_location', {
+            const payload = {
                 lat: null,
                 lon: null,
                 source: "ip"
-            });
+            };
 
-            socket.emit('start_stream', {
-                lat: null,
-                lon: null,
-                source: "ip"
-            });
+            socket.emit('set_location', payload);
+            socket.emit('start_stream', payload);
         },
         {
             enableHighAccuracy: true,
@@ -57,8 +47,34 @@ function sendBestLocation() {
     );
 }
 
-socket.on('connect', () => {
+let lastRefresh = 0;
+
+function safeRefresh() {
+    const now = Date.now();
+
+    if (now - lastRefresh < 3000) return; // ignore spam (3s window)
+
+    lastRefresh = now;
     sendBestLocation();
+}
+
+
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+        console.log("User returned:refreshing data");
+
+        safeRefresh();  // re-send location + trigger fresh fetch
+    }
+});
+
+window.addEventListener("focus", () => {
+    console.log("Window focused → refresh");
+
+    safeRefresh();
+});
+
+socket.on('connect', () => {
+    safeRefresh();
 });
 
 function setWeatherBackground(symbol) {
