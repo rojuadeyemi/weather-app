@@ -6,7 +6,7 @@ This is a comprehensive weather application that provides real-time weather fore
 
 - Real-time weather updates
 - Detailed climatic conditions including temperature, humidity, wind speed, and cloud fraction
-- Weather forecasts for the next 1, 6, and 12 hours
+- Weather forecasts for the next 1, 3, and 6 hours, 24 hours, and next 10 days
 - Visual graphs of temperature trends
 - Geolocation-based weather data
 - User-friendly interface
@@ -20,14 +20,15 @@ The skills and tools primarily used are:
 - Working with JSON.
 - Modular programming.
 - Javascript's `Plotly.react`
+- Javascript
 - HTML and CSS
 - Object Oriented Programming (OOP)
 
 The application:
 
-1. Fetches a client's IP address.
-1. Uses the IP address to look up the client's public location.
-1. Provides a weather update for the city the client is in.
+1. Fetches client's positional longitude, latitude, and IP address.
+1. Uses these data to look up the client's public location.
+1. Provides a weather update for the location the client is in.
 
 
 ## Installation
@@ -97,9 +98,9 @@ Then open your web browser and navigate to `<http://127.0.0.1:5000/>` to access 
 
 ![screenshot of app](Capture.PNG)
 
-This is currently rendered at [MyLocation-app](https://mylocation-app.onrender.com/)
+This is currently rendered at [MyLocation](https://mylocation-app.onrender.com/)
 ## Acknowledgements
 - [ip-api](http://ip-api.com)  for providing geolocation API
 - [Met Weather](https://api.met.no/) for providing the weather data API
-- [Waitress](https://docs.pylonsproject.org/projects/waitress/en/stable/runner.html) for the WSGI server
 - [Render](render.com) for provision of free tier deployment of the app.
+- [Nominatim] for the GPS based geolocation data
