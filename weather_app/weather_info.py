@@ -7,6 +7,8 @@ import numpy as np
 def get_currrent_time(weather_data,timezone):
 
     now = pd.Timestamp.now(tz=timezone)
+    print("Now", now)
+    print("timezone", timezone)
 
     closest_idx = np.abs(weather_data.index - now).argmin()
 
