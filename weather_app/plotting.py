@@ -1,25 +1,19 @@
 import plotly.express as px
 import plotly.io as pio
 import json
+from datetime import  timedelta
 
-def get_graphs(temp_ts) -> dict:
+def get_graphs(temp_ts,index) -> dict:
 
     return {
-        "24h": plot_24hr_forecast(temp_ts),
+        "24h": plot_24hr_forecast(temp_ts,index),
         "10d": plot_10day_forecast(temp_ts),
     }
 
 
-def plot_24hr_forecast(weather_data) -> dict:
-    
-    now = weather_data.index[1]
-    from datetime import  timedelta
+def plot_24hr_forecast(weather_data, index) -> dict:
 
-    temp24H = weather_data.loc[
-        (weather_data.index > now) &
-        (weather_data.index <= now + timedelta(hours=24)),
-        "temperature"
-    ]
+    temp24H = weather_data.iloc[index + 1 : index + 25,0]
 
     fig = px.line(
         y=temp24H,
@@ -61,6 +55,7 @@ def plot_10day_forecast(weather_data) -> dict:
         hovertemplate="<b>%{y}°C</b>",
         textfont_size=10
     )
+
     fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
 
     return json.loads(pio.to_json(fig))
