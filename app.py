@@ -30,10 +30,18 @@ last_weather_cache = {}
 def main():
     return render_template("index.html")
 
+def get_ip():
+    forwarded = request.headers.get("X-Forwarded-For", "")
+
+    if forwarded:
+        # first IP is the real client
+        return forwarded.split(",")[0].strip()
+
+    return request.remote_addr
+
 # SAFE LOCATION RESOLVER
 def resolve_location(payload, sid=None):
-
-
+    logging.info(f"detected ip: {clients.get(sid, {}).get('ip')}")
     # 1. GPS preferred
     if payload.get("source") == "gps":
         lat = payload.get("lat")
@@ -45,10 +53,10 @@ def resolve_location(payload, sid=None):
     cached = clients.get(sid, {})
     if cached.get("lat") and cached.get("lon"):
         return cached["lat"], cached["lon"]
-
+    
     # 3. fallback: IP lookup (ONLY if available)
     try:
-        ip = cached.get("ip")
+        ip = payload.get("ip") or cached.get("ip")
         if ip:
             loc = get_location(ip)
             return loc["lat"], loc["lon"]
@@ -101,11 +109,11 @@ def start_worker_once():
 def handle_connect():
     if not clients:
         start_worker_once()
-        
+
     clients[request.sid] = {
         "lat": None,
         "lon": None,
-        "ip": request.remote_addr
+        "ip": get_ip()
     }
     logging.info("Client connected")
 
